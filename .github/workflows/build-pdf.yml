@@ -1,0 +1,34 @@
+name: Build PDF Report
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Chinese Fonts and Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-xetex texlive-lang-chinese texlive-latex-extra fonts-noto-cjk
+
+      - name: Build PDF
+        run: |
+          pandoc report.md -o Lab1-范佳艺.pdf \
+            --pdf-engine=xelatex \
+            -V CJKmainfont="Noto Serif CJK SC" \
+            -V mainfont="Noto Serif CJK SC" \
+            -V monofont="Noto Sans Mono CJK SC" \
+            --highlight-style=tango \
+            -V colorlinks=true \
+            -V linkcolor=blue
+
+      - name: Upload PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lab1-PDF
+          path: Lab1-范佳艺.pdf
