@@ -34,122 +34,102 @@ header-includes:
 ## 1. 基础整数位运算
 
 ### 1.1 bitXor
-**题目要求**：仅使用 `~` 和 `&` 实现异或运算，最大操作符数量 14。
-**推导过程**：
-异或的基本定义是“相同为 0，不同为 1”，用集合的逻辑表示即 `(x & ~y) | (~x & y)`。由于题目禁止使用按位或 `|`，这里需要应用德摩根定律：`A | B = ~(~A & ~(~B))`。
-将 `(x & ~y)` 视为 A，`(~x & y)` 视为 B，代入公式得到：`~(~(x & ~y) & ~(~x & y))`。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}仅使用 \texttt{\textasciitilde} 和 \texttt{\&} 实现异或运算，最大操作符数量 14。\\
+\textbf{推导过程：}异或的基本定义是“相同为 0，不同为 1”，用集合的逻辑表示即 \texttt{(x \& \textasciitilde y) | (\textasciitilde x \& y)}。由于题目禁止使用按位或 \texttt{|}，这里需要应用德摩根定律：\texttt{A | B = \textasciitilde(\textasciitilde A \& \textasciitilde(\textasciitilde B))}。将式子代入即可得到结果。
+\end{mybluebox}
+
+```c
 int bitXor(int x, int y) {
   return ~(~(x&~y)&~(~x&y));
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ### 1.2 tmin
-**题目要求**：返回 32 位补码最小值，最大操作符数量 4。
-**推导过程**：
-32 位有符号整数的最小值为 `-2147483648`，其二进制补码表示为 `0x80000000`，即最高位（符号位）为 1，其余 31 位为 0。
-直接将整型常量 1 左移 31 位即可得到该值。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}返回 32 位补码最小值，最大操作符数量 4。\\
+\textbf{推导过程：}32 位有符号整数的最小值为 \texttt{-2147483648}，其二进制补码表示为 \texttt{0x80000000}，即最高位（符号位）为 1。直接将整型常量 1 左移 31 位即可得到该值。
+\end{mybluebox}
+
+```c
 int tmin(void) {
   return 1<<31;
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ### 1.3 isTmax
-**题目要求**：判断 x 是否为 32 位有符号最大值，不能使用位移操作，最大操作符数量 10。
-**推导过程**：
-最大值为 `0x7FFFFFFF`。将其取反得到 `0x80000000`（即最小值），而最大值加 1 也是 `0x80000000`。因此，满足 `~x == x + 1` 的数大概率是最大值。
-但存在一个特例：当 `x = -1`（即 `0xFFFFFFFF`）时，`~x` 为 0，`x+1` 也为 0，同样满足上述等式。因此必须将 `-1` 排除。
-由于不能使用位移，利用逻辑非 `!` 的特性：对 `-1` 取反得到 0，再次取逻辑非 `!!~x` 得到 0；对最大值取反得到非 0 值，逻辑非后得到 1。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}判断 x 是否为 32 位有符号最大值，不能使用位移操作。\\
+\textbf{推导过程：}最大值为 \texttt{0x7FFFFFFF}。将其取反得到 \texttt{0x80000000}，而最大值加 1 也是 \texttt{0x80000000}。因此满足 \texttt{\textasciitilde x == x + 1}。\\
+但特例 \texttt{x = -1} 也满足上述等式。为了排除 -1，利用逻辑非 \texttt{!} 的特性：对 -1 取反得到 0，再次取逻辑非 \texttt{!!\textasciitilde x} 得到 0；对最大值取反得到非 0 值，逻辑非后得到 1。
+\end{mybluebox}
+
+```c
 int isTmax(int x) {
   return !(~x^(x+1))&!!~x;
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ### 1.4 allOddBits
-**题目要求**：若所有奇数位都为 1 则返回 1，最大操作符数量 12。不能使用大于 255 的常量。
-**推导过程**：
-32 位整数的奇数位全为 1，其掩码为 `0xAAAAAAAA`。由于禁止使用大常量，需要用小常量 `0xAA` 通过位移和或运算拼接：`(0xAA<<24)|(0xAA<<16)|(0xAA<<8)|0xAA`。
-将 x 与该掩码进行与运算，若奇数位全为 1，结果必定等于该掩码。通过异或运算判断两数是否相等，最后用逻辑非返回结果。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}若所有奇数位都为 1 则返回 1，不能使用大于 255 的常量。\\
+\textbf{推导过程：}32 位整数的奇数位全为 1，其掩码为 \texttt{0xAAAAAAAA}。因为禁用大常量，需用小常量 \texttt{0xAA} 拼接。将 x 与该掩码进行与运算，若结果等于掩码，说明奇数位全为 1。
+\end{mybluebox}
+
+```c
 int allOddBits(int x) {
   int mask = (0xAA<<24)|(0xAA<<16)|(0xAA<<8)|0xAA;
   return !((x&mask)^mask);
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ### 1.5 negate
-**题目要求**：返回 -x，最大操作符数量 5。
-**推导过程**：
-在补码系统中，求一个数的相反数的方法是按位取反后加一。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}返回 -x，最大操作符数量 5。\\
+\textbf{推导过程：}在补码系统中，求相反数的方法是按位取反后加一。
+\end{mybluebox}
+
+```c
 int negate(int x) {
   return ~x+1;
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ## 2. 进阶逻辑与比较
 
 ### 2.1 isAsciiDigit
-**题目要求**：判断 x 是否在 `0x30` 到 `0x39` 之间（即字符 '0'-'9'），最大操作符数量 15。
-**推导过程**：
-比较大小可通过减法判断符号位。计算 `x - 0x30`（即 `x + (~0x30+1)`），若结果最高位为 1，则 x 小于 0x30。
-计算 `0x39 - x`（即 `0x39 + (~x+1)`），若结果最高位为 1，则 x 大于 0x39。
-将两个结果相或，右移 31 位提取符号位。若符号位为 0，说明两者皆满足，在范围内。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}判断 x 是否在 \texttt{0x30} 到 \texttt{0x39} 之间。\\
+\textbf{推导过程：}计算 \texttt{x - 0x30} 和 \texttt{0x39 - x}。若两者结果的最高位（符号位）皆为 0，说明 x 在该范围内。
+\end{mybluebox}
+
+```c
 int isAsciiDigit(int x) {
   int lower = x+(~0x30+1);
   int upper = 0x39+(~x+1);
   return !((lower|upper)>>31);
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ### 2.2 conditional
-**题目要求**：实现 `x ? y : z`，最大操作符数量 16。
-**推导过程**：
-核心是构造一个掩码。若 x 非 0，需构造全 1 掩码；若 x 为 0，需构造全 0 掩码。
-利用两次逻辑非将 x 归一化为 0 或 1，取反加一，即 `~(!!x)+1`。当 x 非 0 时，该式为全 1；当 x 为 0 时，该式为 0。
-将掩码与 y 相与，其反码与 z 相与，最后合并。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}实现 \texttt{x ? y : z}。\\
+\textbf{推导过程：}核心是构造掩码。利用 \texttt{\textasciitilde(!!x)+1}，当 x 非 0 时生成全 1，x 为 0 时生成全 0。将掩码与 y 相与，其反码与 z 相与，最后合并。
+\end{mybluebox}
+
+```c
 int conditional(int x, int y, int z) {
   return ((~(!!x)+1)&y)|(~(~(!!x)+1)&z);
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ### 2.3 isLessOrEqual
-**题目要求**：判断 `x <= y`，最大操作符数量 24。
-**推导过程**：
-若直接计算 `y - x`，在异号相减时极易发生溢出，导致符号位判断错误。
-必须分情况讨论：
-1. 提取两者符号位 `sx` 和 `sy`。
-2. 若异号（`sx` 为 1 且 `sy` 为 0），必然 `x <= y`。
-3. 若同号（`sx ^ sy == 0`），此时不会溢出，可直接判断 `y - x` 的符号位（最高位是否为 0）。
-将上述逻辑转换为位运算组合，并使用 `!!` 规范化为 1 或 0 返回。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}判断 \texttt{x <= y}。\\
+\textbf{推导过程：}直接相减可能溢出。必须分情况讨论：提取两者符号位，若异号，x 为负 y 为正时直接成立；若同号，判断 \texttt{y - x} 的符号位。
+\end{mybluebox}
+
+```c
 int isLessOrEqual(int x, int y) {
   int sx = x>>31;
   int sy = y>>31;
@@ -157,34 +137,30 @@ int isLessOrEqual(int x, int y) {
   int sd = diff>>31;
   return !!((sx&~sy)|(~(sx^sy)&~sd));
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ### 2.4 logicalNeg
-**题目要求**：实现逻辑非 `!`，最大操作符数量 12。
-**推导过程**：
-如果 x 为 0，`x | (~x+1)` 的结果仍为 0。如果 x 非 0，它和它的相反数必然有一个是负数（符号位为 1）。
-因此，`x | (~x+1)` 的结果符号位可以作为判断依据。将其右移 31 位，若是 0 则结果为 0，非 0 则结果为 `0xFFFFFFFF`（即 -1）。对其加 1 即可得到 1 或 0。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}实现逻辑非 \texttt{!}。\\
+\textbf{推导过程：}如果 x 为 0，\texttt{x | (\textasciitilde x+1)} 仍为 0；若非 0，由于正负数符号位必有一个 1，该式符号位必为 1。对其右移 31 位加 1 即可。
+\end{mybluebox}
+
+```c
 int logicalNeg(int x) {
   int y = x|(~x+1);
   return (y>>31)+1;
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ## 3. 复杂算法与浮点数
 
 ### 3.1 howManyBits
-**题目要求**：求表示 x 所需的最少补码位数，最大操作符数量 90。
-**推导过程**：
-若 x 为正数，需要找到最高位的 1；若为负数，需要找到最高位的 0。可以先将负数转化为正数统一处理。
-采用二分法思想：判断高 16 位是否存在有效位，若有则至少需要 16 位，将 x 右移 16 位继续判断；再判断高 8 位、4 位、2 位、1 位。最后累加所有跨度，加上符号位。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}求表示 x 所需的最少补码位数。\\
+\textbf{推导过程：}利用二分法思想，依次判断高 16 位、8 位、4 位等区间是否有 1，最后把跨度加上符号位。
+\end{mybluebox}
+
+```c
 int howManyBits(int x) {
   int sign = x>>31;
   int b16,b8,b4,b2,b1,b0;
@@ -197,19 +173,15 @@ int howManyBits(int x) {
   b0 = x;
   return b16+b8+b4+b2+b1+b0+1;
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ### 3.2 floatScale2
-**题目要求**：浮点数乘 2，最大操作符数量 30。
-**推导过程**：
-提取符号位、8 位阶码和 23 位尾数。
-若阶码为 0xFF（无穷大或 NaN），直接返回原值。
-若阶码为 0（非规格化数），直接左移尾数一位即可完成乘 2 操作。
-若为普通规格化数，阶码加 1 即可。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}浮点数乘 2。\\
+\textbf{推导过程：}若阶码为 0xFF 原样返回；若为 0（非规格化），左移尾数；若为普通规格化数，阶码加 1。
+\end{mybluebox}
+
+```c
 unsigned floatScale2(unsigned uf) {
   unsigned sign = (uf>>31)&1;
   unsigned exp = (uf>>23)&0xFF;
@@ -219,19 +191,15 @@ unsigned floatScale2(unsigned uf) {
   else { exp = exp+1; }
   return (sign<<31)|(exp<<23)|frac;
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ### 3.3 floatFloat2Int
-**题目要求**：浮点数转整数，最大操作符数量 30。
-**推导过程**：
-提取符号、阶码和尾数。计算真实阶数 `E = exp - 127`。
-若 `E < 0`，表示浮点数值绝对值小于 1，转整数为 0。
-若 `E > 30`，超出 32 位整数表示范围，返回 `0x80000000`。
-若在合法范围内，需恢复隐含的整数位 1（`frac | (1<<23)`），并根据 E 的大小进行左移或右移，最后根据符号位补上负号。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}浮点数转整数。\\
+\textbf{推导过程：}真实阶数 \texttt{E = exp - 127}。若 \texttt{E < 0} 返回 0；\texttt{E > 30} 返回 \texttt{0x80000000}。否则恢复隐藏的 1 并根据 E 进行移位。
+\end{mybluebox}
+
+```c
 int floatFloat2Int(unsigned uf) {
   int sign;
   int exp;
@@ -248,18 +216,15 @@ int floatFloat2Int(unsigned uf) {
   if(sign) { return -result; }
   return result;
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 ### 3.4 floatPower2
-**题目要求**：计算 2.0 的 x 次方，最大操作符数量 30。
-**推导过程**：
-2.0^x 的浮点表示中，尾数全为 0，仅改变阶码。
-真实阶数 x 加上偏移量 127 即为阶码。若计算出的阶码大于 254（即 x > 127），返回无穷大；若阶码小于等于 0（即 x < -126），返回 0。
-将计算出的阶码直接左移 23 位即可得到最终结果。
-**代码实现**：
 \begin{mybluebox}
-\begin{verbatim}
+\textbf{题目要求：}计算 2.0 的 x 次方。\\
+\textbf{推导过程：}2.0^x 只有阶码改变。真实阶数 x 加 127 为阶码。若越界返回特定值，否则阶码左移 23 位。
+\end{mybluebox}
+
+```c
 unsigned floatPower2(int x) {
   int exp;
   if(x>127) { return (0xFF<<23); }
@@ -267,40 +232,37 @@ unsigned floatPower2(int x) {
   exp = x+127;
   return exp<<23;
 }
-\end{verbatim}
-\end{mybluebox}
+```
 
 \newpage
 
 # 三、 实验中遇到的问题与解决过程
 
-在本地运行 `./btest` 时，逻辑功能完全正确，但在使用 `./dlc` 语法检查器时，遇到了多次报错。
+在本地运行 `./btest` 时逻辑完全正确，但在使用 `./dlc` 语法检查器时遇到了多次报错。
 
-## 问题 1：变量声明位置导致的编译失败
+## 问题 1：变量声明位置导致编译失败
 \begin{mybluebox}
-\textbf{现象：} 运行时出现大量 `parse error` 和 `undeclared variable`，共计 19 个报错。
-\textbf{原因：} `dlc` 按照 C89 标准进行语法检查，要求所有的局部变量声明必须位于函数体最前端。在编写 `howManyBits` 时，我将变量声明与赋值语句混排了。
-\textbf{解决：} 将函数内用到的所有 int 变量统一提取到函数第一行声明，随后再进行赋值和运算。
+\textbf{现象：}出现大量 \texttt{parse error} 和 \texttt{undeclared variable}。\\
+\textbf{原因：}\texttt{dlc} 按照 C89 标准检查，要求变量声明必须在函数最前端。\\
+\textbf{解决：}将所有的 \texttt{int} 变量提取到第一行声明，再进行赋值。
 \end{mybluebox}
 
 ![变量声明报错](2_dlc_19errors.png)
 
 ## 问题 2：使用了非法操作符
 \begin{mybluebox}
-\textbf{现象：} `bits.c:165:isTmax: Illegal operator (>>)`
-\textbf{原因：} 在 `isTmax` 函数中，我一开始使用了右移操作 `x >> 31` 来判断符号位，但查看题目上方的要求发现，该题不允许使用 `>>`。
-\textbf{解决：} 放弃右移，根据 `~x == x+1` 这一特性，结合 `!!~x` 重写了判断逻辑，成功通过限制检查。
+\textbf{现象：}\texttt{bits.c:165:isTmax: Illegal operator (>>)}\\
+\textbf{原因：} \texttt{isTmax} 中使用了右移操作 \texttt{>>}，但题目不允许。\\
+\textbf{解决：}利用 \texttt{\textasciitilde x == x+1} 特性及 \texttt{!!\textasciitilde x} 重写判断逻辑。
 \end{mybluebox}
 
 ![非法操作符报错](3_illegal_op.png)
 
-## 问题 3：边界值测试失败与大常量解析问题
+## 问题 3：边界值测试与大常量解析
 \begin{mybluebox}
-\textbf{现象：} 测试得分为 32/36，`howManyBits` 在输入 `-2147483648` 时返回错误。同时 `dlc` 报 `bits.c:283: parse error`。
-\textbf{原因：} 
-1. `howManyBits` 在处理负数位移时，因算术右移补 1 导致计算错误。
-2. `floatPower2` 的代码中使用了 `0x7F800000` 这样的超大常量，老旧版本的解析器无法正确识别导致崩溃。
-\textbf{解决：} 修正了负数处理的逻辑，将负数转化为正数计算后补上符号位；同时将大常量替换为位移操作 `(0xFF << 23)`，绕过了工具限制，最终实现了 0 报错。
+\textbf{现象：}得分 32/36，且出现 \texttt{bits.c:283: parse error}。\\
+\textbf{原因：}\texttt{howManyBits} 处理负数移位出错；\texttt{floatPower2} 的超大常量 \texttt{0x7F800000} 导致老旧解析器崩溃。\\
+\textbf{解决：}修正负数逻辑；将超大常量替换为 \texttt{(0xFF << 23)}。
 \end{mybluebox}
 
 ![部分测试失败](4_32_36.png)
@@ -316,8 +278,5 @@ unsigned floatPower2(int x) {
 ![dlc无报错](6_dlc_success.png)
 
 \begin{mybluebox}
-\textbf{总结：}
-通过本次实验，我对计算机底层的位运算、补码表示以及 IEEE 754 浮点数格式有了更直观的理解。在不允许使用常规控制流和算术运算符的限制下，只能通过掩码构造、位运算逻辑推导来达成目的，这极大地锻炼了底层思维。
-
-此外，实验中遇到的多次 `dlc` 报错，也让我了解了 C89 标准的变量声明规范以及老旧编译器的解析限制，并学会了如何通过阅读错误提示和查阅资料来解决环境与工具带来的阻碍。整体而言，这次实验不仅巩固了理论知识，也提升了实际排错能力。
+\textbf{总结：}通过本次实验，我对计算机底层的位运算、补码及 IEEE 754 浮点数格式有了更直观的理解。实验中多次遇到的 \texttt{dlc} 报错，让我了解了 C89 标准规范及老旧编译器的限制，并提升了通过阅读日志解决环境问题的能力。
 \end{mybluebox}
