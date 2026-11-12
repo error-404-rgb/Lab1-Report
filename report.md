@@ -1,5 +1,5 @@
 ---
-title: "计算机系统基础Ⅱ Lab1 - DataLab 实验报告"
+title: "计算机系统基础 II Lab1 - DataLab 实验报告"
 author: "姓名：范佳艺"
 date: "2026年11月12日"
 geometry: margin=2.5cm
@@ -10,7 +10,6 @@ header-includes:
   - \usepackage{tcolorbox}
   - \usepackage{hyperref}
   - \hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
-  - \renewenvironment{Shaded}{\begin{tcolorbox}[colback=gray!10, colframe=gray!60, boxrule=0.5pt, arc=3pt, left=5pt, right=5pt, top=5pt, bottom=5pt]}{\end{tcolorbox}}
   - \newtcolorbox{mybluebox}{colback=blue!5!white, colframe=blue!50!black, boxrule=0.5pt, arc=3pt, left=5pt, right=5pt, top=5pt, bottom=5pt}
 ---
 
@@ -35,8 +34,8 @@ header-includes:
 
 ### 1.1 bitXor
 \begin{mybluebox}
-\textbf{题目要求：}仅使用 \texttt{\textasciitilde} 和 \texttt{\&} 实现异或运算，最大操作符数量 14。\\
-\textbf{推导过程：}异或的基本定义是“相同为 0，不同为 1”，用集合的逻辑表示即 \texttt{(x \& \textasciitilde y) | (\textasciitilde x \& y)}。由于题目禁止使用按位或 \texttt{|}，这里需要应用德摩根定律：\texttt{A | B = \textasciitilde(\textasciitilde A \& \textasciitilde(\textasciitilde B))}。将式子代入即可得到结果。
+\textbf{题目要求：}仅使用 \textasciitilde{} 和 \& 实现异或运算。\\
+\textbf{推导过程：}异或的定义是“相同为 0，不同为 1”，逻辑表示为 (x \& \textasciitilde{}y) | (\textasciitilde{}x \& y)。因禁止使用按位或 |，应用德摩根定律进行转换：A | B = \textasciitilde{}(\textasciitilde{}A \& \textasciitilde{}(\textasciitilde{}B))。将式子代入即可。
 \end{mybluebox}
 
 ```c
@@ -47,8 +46,8 @@ int bitXor(int x, int y) {
 
 ### 1.2 tmin
 \begin{mybluebox}
-\textbf{题目要求：}返回 32 位补码最小值，最大操作符数量 4。\\
-\textbf{推导过程：}32 位有符号整数的最小值为 \texttt{-2147483648}，其二进制补码表示为 \texttt{0x80000000}，即最高位（符号位）为 1。直接将整型常量 1 左移 31 位即可得到该值。
+\textbf{题目要求：}返回 32 位补码最小值。\\
+\textbf{推导过程：}32 位有符号整数最小值的二进制为 0x80000000（最高位为 1）。直接将整型常量 1 左移 31 位即可。
 \end{mybluebox}
 
 ```c
@@ -59,9 +58,8 @@ int tmin(void) {
 
 ### 1.3 isTmax
 \begin{mybluebox}
-\textbf{题目要求：}判断 x 是否为 32 位有符号最大值，不能使用位移操作。\\
-\textbf{推导过程：}最大值为 \texttt{0x7FFFFFFF}。将其取反得到 \texttt{0x80000000}，而最大值加 1 也是 \texttt{0x80000000}。因此满足 \texttt{\textasciitilde x == x + 1}。\\
-但特例 \texttt{x = -1} 也满足上述等式。为了排除 -1，利用逻辑非 \texttt{!} 的特性：对 -1 取反得到 0，再次取逻辑非 \texttt{!!\textasciitilde x} 得到 0；对最大值取反得到非 0 值，逻辑非后得到 1。
+\textbf{题目要求：}判断 x 是否为 32 位有符号最大值，禁用位移。\\
+\textbf{推导过程：}最大值 0x7FFFFFFF 满足 \textasciitilde{}x == x + 1。但特例 -1 也满足此等式。为了排除 -1，利用逻辑非：对 -1 取反为 0，!!\textasciitilde{}x 得 0；对最大值取反非 0，逻辑非得 1。
 \end{mybluebox}
 
 ```c
@@ -72,8 +70,8 @@ int isTmax(int x) {
 
 ### 1.4 allOddBits
 \begin{mybluebox}
-\textbf{题目要求：}若所有奇数位都为 1 则返回 1，不能使用大于 255 的常量。\\
-\textbf{推导过程：}32 位整数的奇数位全为 1，其掩码为 \texttt{0xAAAAAAAA}。因为禁用大常量，需用小常量 \texttt{0xAA} 拼接。将 x 与该掩码进行与运算，若结果等于掩码，说明奇数位全为 1。
+\textbf{题目要求：}若所有奇数位都为 1 则返回 1，禁用大常量。\\
+\textbf{推导过程：}32 位奇数位全 1 的掩码为 0xAAAAAAAA。用小常量 0xAA 拼接出该掩码。将 x 与掩码相与，判断结果是否等于掩码。
 \end{mybluebox}
 
 ```c
@@ -85,8 +83,8 @@ int allOddBits(int x) {
 
 ### 1.5 negate
 \begin{mybluebox}
-\textbf{题目要求：}返回 -x，最大操作符数量 5。\\
-\textbf{推导过程：}在补码系统中，求相反数的方法是按位取反后加一。
+\textbf{题目要求：}返回 -x。\\
+\textbf{推导过程：}补码系统中，按位取反后加一。
 \end{mybluebox}
 
 ```c
@@ -99,8 +97,8 @@ int negate(int x) {
 
 ### 2.1 isAsciiDigit
 \begin{mybluebox}
-\textbf{题目要求：}判断 x 是否在 \texttt{0x30} 到 \texttt{0x39} 之间。\\
-\textbf{推导过程：}计算 \texttt{x - 0x30} 和 \texttt{0x39 - x}。若两者结果的最高位（符号位）皆为 0，说明 x 在该范围内。
+\textbf{题目要求：}判断 x 是否在 0x30 到 0x39 之间。\\
+\textbf{推导过程：}分别计算 x - 0x30 和 0x39 - x。若两者结果符号位皆为 0，说明在范围内。
 \end{mybluebox}
 
 ```c
@@ -113,8 +111,8 @@ int isAsciiDigit(int x) {
 
 ### 2.2 conditional
 \begin{mybluebox}
-\textbf{题目要求：}实现 \texttt{x ? y : z}。\\
-\textbf{推导过程：}核心是构造掩码。利用 \texttt{\textasciitilde(!!x)+1}，当 x 非 0 时生成全 1，x 为 0 时生成全 0。将掩码与 y 相与，其反码与 z 相与，最后合并。
+\textbf{题目要求：}实现 x ? y : z。\\
+\textbf{推导过程：}利用 \textasciitilde{}(!!x)+1 构造掩码：x 非 0 时为全 1，为 0 时为全 0。将掩码与 y 相与，反码与 z 相与，合并。
 \end{mybluebox}
 
 ```c
@@ -125,8 +123,8 @@ int conditional(int x, int y, int z) {
 
 ### 2.3 isLessOrEqual
 \begin{mybluebox}
-\textbf{题目要求：}判断 \texttt{x <= y}。\\
-\textbf{推导过程：}直接相减可能溢出。必须分情况讨论：提取两者符号位，若异号，x 为负 y 为正时直接成立；若同号，判断 \texttt{y - x} 的符号位。
+\textbf{题目要求：}判断 x <= y。\\
+\textbf{推导过程：}防止相减溢出，分情况讨论。提取符号位，异号直接判断；同号再判断 y - x 的符号位。
 \end{mybluebox}
 
 ```c
@@ -141,8 +139,8 @@ int isLessOrEqual(int x, int y) {
 
 ### 2.4 logicalNeg
 \begin{mybluebox}
-\textbf{题目要求：}实现逻辑非 \texttt{!}。\\
-\textbf{推导过程：}如果 x 为 0，\texttt{x | (\textasciitilde x+1)} 仍为 0；若非 0，由于正负数符号位必有一个 1，该式符号位必为 1。对其右移 31 位加 1 即可。
+\textbf{题目要求：}实现逻辑非 !。\\
+\textbf{推导过程：}若 x 为 0，x | (\textasciitilde{}x+1) 仍为 0；若非 0，正负数必有符号位为 1。右移 31 位后加 1。
 \end{mybluebox}
 
 ```c
@@ -157,7 +155,7 @@ int logicalNeg(int x) {
 ### 3.1 howManyBits
 \begin{mybluebox}
 \textbf{题目要求：}求表示 x 所需的最少补码位数。\\
-\textbf{推导过程：}利用二分法思想，依次判断高 16 位、8 位、4 位等区间是否有 1，最后把跨度加上符号位。
+\textbf{推导过程：}二分法，依次判断高 16、8、4 位等是否有 1，累加跨度并加符号位。
 \end{mybluebox}
 
 ```c
@@ -178,7 +176,7 @@ int howManyBits(int x) {
 ### 3.2 floatScale2
 \begin{mybluebox}
 \textbf{题目要求：}浮点数乘 2。\\
-\textbf{推导过程：}若阶码为 0xFF 原样返回；若为 0（非规格化），左移尾数；若为普通规格化数，阶码加 1。
+\textbf{推导过程：}阶码为 0xFF 原样返回；阶码为 0 左移尾数；普通规格化数阶码加 1。
 \end{mybluebox}
 
 ```c
@@ -196,7 +194,7 @@ unsigned floatScale2(unsigned uf) {
 ### 3.3 floatFloat2Int
 \begin{mybluebox}
 \textbf{题目要求：}浮点数转整数。\\
-\textbf{推导过程：}真实阶数 \texttt{E = exp - 127}。若 \texttt{E < 0} 返回 0；\texttt{E > 30} 返回 \texttt{0x80000000}。否则恢复隐藏的 1 并根据 E 进行移位。
+\textbf{推导过程：}真实阶数 E = exp - 127。E < 0 返回 0；E > 30 返回 0x80000000。恢复隐藏的 1 并根据 E 移位。
 \end{mybluebox}
 
 ```c
@@ -221,7 +219,7 @@ int floatFloat2Int(unsigned uf) {
 ### 3.4 floatPower2
 \begin{mybluebox}
 \textbf{题目要求：}计算 2.0 的 x 次方。\\
-\textbf{推导过程：}2.0^x 只有阶码改变。真实阶数 x 加 127 为阶码。若越界返回特定值，否则阶码左移 23 位。
+\textbf{推导过程：}2.0\textasciicircum{}x 只有阶码改变。x+127 为阶码。越界返回特定值，否则阶码左移 23 位。
 \end{mybluebox}
 
 ```c
@@ -242,27 +240,27 @@ unsigned floatPower2(int x) {
 
 ## 问题 1：变量声明位置导致编译失败
 \begin{mybluebox}
-\textbf{现象：}出现大量 \texttt{parse error} 和 \texttt{undeclared variable}。\\
-\textbf{原因：}\texttt{dlc} 按照 C89 标准检查，要求变量声明必须在函数最前端。\\
-\textbf{解决：}将所有的 \texttt{int} 变量提取到第一行声明，再进行赋值。
+\textbf{现象：}出现大量 parse error 和 undeclared variable。\\
+\textbf{原因：} dlc 按照 C89 标准检查，要求变量声明必须在函数最前端。\\
+\textbf{解决：}将所有的 int 变量提取到第一行声明，再进行赋值。
 \end{mybluebox}
 
 ![变量声明报错](2_dlc_19errors.png)
 
 ## 问题 2：使用了非法操作符
 \begin{mybluebox}
-\textbf{现象：}\texttt{bits.c:165:isTmax: Illegal operator (>>)}\\
-\textbf{原因：} \texttt{isTmax} 中使用了右移操作 \texttt{>>}，但题目不允许。\\
-\textbf{解决：}利用 \texttt{\textasciitilde x == x+1} 特性及 \texttt{!!\textasciitilde x} 重写判断逻辑。
+\textbf{现象：} bits.c:165:isTmax: Illegal operator (>>)\\
+\textbf{原因：} isTmax 中使用了右移操作 >>，但题目不允许。\\
+\textbf{解决：}利用 \textasciitilde{}x == x+1 特性及 !!\textasciitilde{}x 重写判断逻辑。
 \end{mybluebox}
 
 ![非法操作符报错](3_illegal_op.png)
 
 ## 问题 3：边界值测试与大常量解析
 \begin{mybluebox}
-\textbf{现象：}得分 32/36，且出现 \texttt{bits.c:283: parse error}。\\
-\textbf{原因：}\texttt{howManyBits} 处理负数移位出错；\texttt{floatPower2} 的超大常量 \texttt{0x7F800000} 导致老旧解析器崩溃。\\
-\textbf{解决：}修正负数逻辑；将超大常量替换为 \texttt{(0xFF << 23)}。
+\textbf{现象：}得分 32/36，且出现 bits.c:283: parse error。\\
+\textbf{原因：} howManyBits 处理负数移位出错；floatPower2 的超大常量 0x7F800000 导致老旧解析器崩溃。\\
+\textbf{解决：}修正负数逻辑；将超大常量替换为 (0xFF << 23)。
 \end{mybluebox}
 
 ![部分测试失败](4_32_36.png)
@@ -278,5 +276,5 @@ unsigned floatPower2(int x) {
 ![dlc无报错](6_dlc_success.png)
 
 \begin{mybluebox}
-\textbf{总结：}通过本次实验，我对计算机底层的位运算、补码及 IEEE 754 浮点数格式有了更直观的理解。实验中多次遇到的 \texttt{dlc} 报错，让我了解了 C89 标准规范及老旧编译器的限制，并提升了通过阅读日志解决环境问题的能力。
+\textbf{总结：}通过本次实验，我对计算机底层的位运算、补码及 IEEE 754 浮点数格式有了更直观的理解。实验中多次遇到的 dlc 报错，让我了解了 C89 标准规范及老旧编译器的限制，并提升了通过阅读日志解决环境问题的能力。
 \end{mybluebox}
