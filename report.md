@@ -8,10 +8,9 @@ linestretch: 1.5
 header-includes:
   - \usepackage{xcolor}
   - \usepackage{tcolorbox}
-  - \newtcolorbox{mybluebox}{colback=cyan!5!white, colframe=cyan!50!black, boxrule=0.5pt, arc=3pt, left=5pt, right=5pt, top=5pt, bottom=5pt, breakable}
-  - \renewenvironment{Shaded}{\begin{tcolorbox}[colback=gray!10, colframe=blue!60!black, boxrule=0.5pt, arc=3pt, left=5pt, right=5pt, top=5pt, bottom=5pt]}{\end{tcolorbox}}
   - \usepackage{hyperref}
   - \hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+  - \newtcolorbox{mybluebox}{colback=blue!5!white, colframe=blue!50!black, boxrule=0.5pt, arc=3pt, left=5pt, right=5pt, top=5pt, bottom=5pt}
 ---
 
 \tableofcontents
@@ -23,25 +22,20 @@ header-includes:
 
 ![实验环境初始化](1_init.png)
 
-在实验初期，我尝试在虚拟机的终端中直接使用文本编辑器修改代码。但终端操作在处理长文件时不够直观，稍有不慎就会误触或破坏原文件中的注释，且编译报错后的代码定位极其困难。为了提高开发效率，我查阅了讲义提示，通过配置 VirtualBox 的 NAT 端口转发，在 Windows 宿主机上使用 VSCode 的 SSH 插件连接到了虚拟机。此后，所有的代码编写、测试与规范检查均在 VSCode 中配合终端完成。
+在实验初期，我尝试在虚拟机的终端中直接使用文本编辑器修改代码。不习惯使用。为了提高开发效率，我查阅了讲义提示，通过配置 VirtualBox 的 NAT 端口转发，在 Windows 宿主机上使用 VSCode 的 SSH 插件连接到了虚拟机。此后，所有的代码编写、测试与规范检查均在 VSCode 中配合终端完成。
 
 \newpage
 
 # 二、 题目实现与逻辑推导
 
-本次实验共包含 13 个函数，主要考察位运算、补码特性以及浮点数标准。以下是我在实现每道题时的详细推导过程。
+本次实验共包含 13 个函数，以下是各题的详细推导过程与实现代码。
 
 ## 1. 基础整数位运算
 
 ### 1.1 bitXor
-
 \begin{mybluebox}
-\textbf{题目要求：}仅使用 \textasciitilde{} 和 \& 实现异或运算，最大操作符数量 14。
-
-\textbf{思维推导：}
-异或运算的逻辑是“相同为 0，不同为 1”。我首先想到的基础逻辑公式是：(x \& \textasciitilde{}y) | (\textasciitilde{}x \& y)，即“x为1且y为0”或者“x为0且y为1”。
-但由于题目严格禁止使用按位或运算符 |，我必须寻找替代方案。回顾离散数学中的德摩根定律，有 A | B = \textasciitilde{}(\textasciitilde{}A \& \textasciitilde{}(\textasciitilde{}B))。
-将 A 和 B 代入，即可推导出不使用或运算符的最终表达式。
+\textbf{题目要求：}仅使用 \textasciitilde{} 和 \& 实现异或运算。\\
+\textbf{推导过程：}异或的定义是“相同为 0，不同为 1”，逻辑表示为 (x \& \textasciitilde{}y) | (\textasciitilde{}x \& y)。因禁止使用按位或 |，应用德摩根定律进行转换：A | B = \textasciitilde{}(\textasciitilde{}A \& \textasciitilde{}(\textasciitilde{}B))。将式子代入即可。
 \end{mybluebox}
 
 ```c
@@ -51,13 +45,9 @@ int bitXor(int x, int y) {
 ```
 
 ### 1.2 tmin
-
 \begin{mybluebox}
-\textbf{题目要求：}返回 32 位补码最小值，最大操作符数量 4。
-
-\textbf{思维推导：}
-32 位有符号整数的最小值是 -2147483648，其二进制补码表示为 0x80000000。也就是说，除了最高位的符号位是 1，其余全是 0。
-起初我想直接返回该常量，但这会触发编译器对常量的限制。根据补码的位权定义，最高位的 1 代表 2 的 31 次方取负。因此，直接将 1 左移 31 位，即可完美构造这个特殊值。
+\textbf{题目要求：}返回 32 位补码最小值。\\
+\textbf{推导过程：}32 位有符号整数最小值的二进制为 0x80000000（最高位为 1）。直接将整型常量 1 左移 31 位即可。
 \end{mybluebox}
 
 ```c
@@ -67,14 +57,9 @@ int tmin(void) {
 ```
 
 ### 1.3 isTmax
-
 \begin{mybluebox}
-\textbf{题目要求：}判断 x 是否为最大值，禁用位移操作，最大操作符数量 10。
-
-\textbf{思维推导：}
-32 位最大值为 0x7FFFFFFF。观察其二进制特性发现：将其取反得到 0x80000000，而将其加 1 也会得到 0x80000000。因此最大值满足条件 \textasciitilde{}x == x + 1。
-但这引出了一个陷阱：当 x = -1 (0xFFFFFFFF) 时，取反为 0，加 1 也为 0，同样满足上述等式。必须排除 -1。
-由于禁用右移，我无法用位移判断符号位。但我可以利用逻辑非 ! 对布尔值敏感的特性：对 -1 取反得到 0，再取逻辑非 !!\textasciitilde{}x 得到 0；对最大值取反是非零值，逻辑非后得到 1。这样就能安全排除 -1。
+\textbf{题目要求：}判断 x 是否为 32 位有符号最大值，禁用位移。\\
+\textbf{推导过程：}最大值 0x7FFFFFFF 满足 \textasciitilde{}x == x + 1。但特例 -1 也满足此等式。为了排除 -1，利用逻辑非：对 -1 取反为 0，!!\textasciitilde{}x 得 0；对最大值取反非 0，逻辑非得 1。
 \end{mybluebox}
 
 ```c
@@ -84,14 +69,9 @@ int isTmax(int x) {
 ```
 
 ### 1.4 allOddBits
-
 \begin{mybluebox}
-\textbf{题目要求：}奇数位全为 1 则返回 1，禁用大于 255 的常量，最大操作符数量 12。
-
-\textbf{思维推导：}
-32 位整数的奇数位（1,3,5...31）全为 1，其掩码应该是 0xAAAAAAAA。我的初步思路是将 x 与该掩码相与，看结果是否等于掩码。
-但是题目不允许直接使用这样的大常量。我只能用小常量 0xAA 通过位移和逻辑或拼接：(0xAA \textless{}\textless{} 24) | (0xAA \textless{}\textless{} 16) | (0xAA \textless{}\textless{} 8) | 0xAA。
-利用异或运算可以判断两数是否相等（相等则结果为0），最后加一个 ! 将结果反转作为布尔返回值。
+\textbf{题目要求：}若所有奇数位都为 1 则返回 1，禁用大常量。\\
+\textbf{推导过程：}32 位奇数位全 1 的掩码为 0xAAAAAAAA。用小常量 0xAA 拼接出该掩码。将 x 与掩码相与，判断结果是否等于掩码。
 \end{mybluebox}
 
 ```c
@@ -102,12 +82,9 @@ int allOddBits(int x) {
 ```
 
 ### 1.5 negate
-
 \begin{mybluebox}
-\textbf{题目要求：}返回 -x，最大操作符数量 5。
-
-\textbf{思维推导：}
-在计算机组成原理中，补码系统求一个数的相反数的标准步骤是“按位取反，末位加一”。直接套用此规律即可。
+\textbf{题目要求：}返回 -x。\\
+\textbf{推导过程：}补码系统中，按位取反后加一。
 \end{mybluebox}
 
 ```c
@@ -116,18 +93,12 @@ int negate(int x) {
 }
 ```
 
-## 2. 进阶逻辑与比较
+## 2. 逻辑运算与比较
 
 ### 2.1 isAsciiDigit
-
 \begin{mybluebox}
-\textbf{题目要求：}判断 x 是否属于 [0x30, 0x39]，最大操作符数量 15。
-
-\textbf{思维推导：}
-最直观的方法是判断 x \textgreater{}= 0x30 且 x \textless{}= 0x39。在位运算中，大于等于可以转换为相减后看符号位（最高位是否为 0）。
-计算 x - 0x30（转化为 x + (\textasciitilde{}0x30+1)），如果结果为负，说明 x \textless{} 0x30；
-计算 0x39 - x（转化为 0x39 + (\textasciitilde{}x+1)），如果结果为负，说明 x \textgreater{} 0x39。
-将两个结果按位或，统一右移 31 位提取符号位。如果符号位为 0，说明两者都没有借位，在合法范围内。
+\textbf{题目要求：}判断 x 是否在 0x30 到 0x39 之间。\\
+\textbf{推导过程：}分别计算 x - 0x30 和 0x39 - x。若两者结果符号位皆为 0，说明在范围内。
 \end{mybluebox}
 
 ```c
@@ -139,15 +110,9 @@ int isAsciiDigit(int x) {
 ```
 
 ### 2.2 conditional
-
 \begin{mybluebox}
-\textbf{题目要求：}实现三目运算符 x ? y : z，最大操作符数量 16。
-
-\textbf{思维推导：}
-这题的核心是构造一个掩码（Mask）。当 x 不为 0 时，需要全 1 掩码选中 y；当 x 为 0 时，需要全 0 掩码（即其反码全 1）选中 z。
-第一步：利用两次逻辑非 !!x 将 x 归一化为 1 或 0。
-第二步：利用补码特性，对 1 取反加一 \textasciitilde{}(1)+1 会得到全 1，对 0 取反加一仍是 0。所以 \textasciitilde{}(!!x)+1 就是完美的掩码。
-第三步：将掩码与 y 按位与，将掩码的反码与 z 按位与，最后合并。
+\textbf{题目要求：}实现 x ? y : z。\\
+\textbf{推导过程：}利用 \textasciitilde{}(!!x)+1 构造掩码：x 非 0 时为全 1，为 0 时为全 0。将掩码与 y 相与，反码与 z 相与，合并。
 \end{mybluebox}
 
 ```c
@@ -157,16 +122,9 @@ int conditional(int x, int y, int z) {
 ```
 
 ### 2.3 isLessOrEqual
-
 \begin{mybluebox}
-\textbf{题目要求：}判断 x \textless{}= y，最大操作符数量 24。
-
-\textbf{思维推导：}
-最直接的方法是判断 y - x 的符号位。但这隐藏着一个巨大的溢出风险：如果 x 是负数，y 是正数，y - x 可能会超出 32 位补码的正数上限，导致符号位反转（变为负数），从而得出错误的结论。
-因此必须分类讨论：先提取 x 和 y 的符号位（右移 31 位）。
-情况 1：异号。如果 x 为负且 y 为正，则必然 x \textless{}= y。
-情况 2：同号。此时相减绝对不会溢出，直接判断 y - x 的符号位是否为 0 即可。
-最后将两种情况用逻辑或和按位与结合，并使用 !! 规范化为 1 或 0 返回。
+\textbf{题目要求：}判断 x <= y。\\
+\textbf{推导过程：}防止相减溢出，分情况讨论。提取符号位，异号直接判断；同号再判断 y - x 的符号位。
 \end{mybluebox}
 
 ```c
@@ -180,14 +138,9 @@ int isLessOrEqual(int x, int y) {
 ```
 
 ### 2.4 logicalNeg
-
 \begin{mybluebox}
-\textbf{题目要求：}实现逻辑非 !，最大操作符数量 12。
-
-\textbf{思维推导：}
-逻辑非的作用是：x 为 0 时返回 1，x 非 0 时返回 0。
-对于非 0 的数，无论正负，其本身和它的相反数（补码）的符号位一定一个是 0，一个是 1。即 x | (\textasciitilde{}x+1) 的结果最高位必然是 1。如果 x 是 0，这个结果还是 0。
-因此，提取 x | (\textasciitilde{}x+1) 的符号位（右移 31 位），得到的将是全 1（若非0）或 0（若为0）。对其加 1，刚好可以得到正确的 0 或 1。
+\textbf{题目要求：}实现逻辑非 !。\\
+\textbf{推导过程：}若 x 为 0，x | (\textasciitilde{}x+1) 仍为 0；若非 0，正负数必有符号位为 1。右移 31 位后加 1。
 \end{mybluebox}
 
 ```c
@@ -197,16 +150,12 @@ int logicalNeg(int x) {
 }
 ```
 
-## 3. 复杂算法与浮点数
+## 3. 算法与浮点数
 
 ### 3.1 howManyBits
-
 \begin{mybluebox}
-\textbf{题目要求：}求补码表示的最小位数，最大操作符数量 90。
-
-\textbf{思维推导：}
-如果是正数，需要找最高位的 1 的位置；如果是负数，需要找最高位的 0 的位置。为了统一处理，我利用符号位 sign = x \textgreater{}\textgreater{} 31，将负数取反（x \textasciicircum{} sign），这样正负数的处理逻辑就一致了。
-但题目不允许写 while 循环。我采用了二分的思路：先看高 16 位是否存在有效位，如果有，则说明至少需要 16 位，把 x 右移 16 位继续判断。接着看 8 位、4 位、2 位、1 位。最后把所有命中的跨度加起来，并在最后加上符号位本身占的 1 位。
+\textbf{题目要求：}求表示 x 所需的最少补码位数。\\
+\textbf{推导过程：}二分法，依次判断高 16、8、4 位等是否有 1，累加跨度并加符号位。
 \end{mybluebox}
 
 ```c
@@ -225,16 +174,9 @@ int howManyBits(int x) {
 ```
 
 ### 3.2 floatScale2
-
 \begin{mybluebox}
-\textbf{题目要求：}浮点数乘 2，最大操作符数量 30。
-
-\textbf{思维推导：}
-必须严格按照 IEEE 754 标准提取三个部分：符号 sign、阶码 exp、尾数 frac。
-乘 2 意味着浮点数的阶数增加 1。但需要特判：
-1. exp 为 0xFF 时，表示无穷大或 NaN，直接原样返回。
-2. exp 为 0 时，为非规格化数，此时阶码无法再减小（已经是极限），只能直接左移尾数一位来实现乘 2。
-3. 其他情况为规格化数，直接对阶码加 1，最后重新拼装位模式。
+\textbf{题目要求：}浮点数乘 2。\\
+\textbf{推导过程：}阶码为 0xFF 原样返回；阶码为 0 左移尾数；普通规格化数阶码加 1。
 \end{mybluebox}
 
 ```c
@@ -250,15 +192,9 @@ unsigned floatScale2(unsigned uf) {
 ```
 
 ### 3.3 floatFloat2Int
-
 \begin{mybluebox}
-\textbf{题目要求：}浮点数转整数，最大操作符数量 30。
-
-\textbf{思维推导：}
-提取阶码后，必须计算真实阶数 E = exp - 127。
-若 E \textless{} 0，说明浮点数的绝对值小于 1，转为整数必然为 0。
-若 E \textgreater{} 30，超出了 32 位有符号整数的表示范围，按题目要求返回 0x80000000。
-若在合法范围内：需要在尾数 frac 前补上 IEEE 754 默认隐藏的 1（即 frac | (1 \textless{}\textless{} 23)）。然后根据 E 和 23 的大小关系，决定是左移还是右移来还原真实数值，最后根据符号位补上负号。
+\textbf{题目要求：}浮点数转整数。\\
+\textbf{推导过程：}真实阶数 E = exp - 127。E < 0 返回 0；E > 30 返回 0x80000000。恢复隐藏的 1 并根据 E 移位。
 \end{mybluebox}
 
 ```c
@@ -281,15 +217,9 @@ int floatFloat2Int(unsigned uf) {
 ```
 
 ### 3.4 floatPower2
-
 \begin{mybluebox}
-\textbf{题目要求：}计算 2.0 的 x 次方，最大操作符数量 30。
-
-\textbf{思维推导：}
-2.0 的 x 次方，其尾数部分必然是 1.000...（即尾数位全为 0）。我们只需计算出正确的阶码即可。
-阶码的真实计算公式为：阶数 x 加上 127 的偏置值。
-首先处理越界：若 x \textgreater{} 127，超出最大阶码，返回无穷大常量；若 x \textless{} -126，超出最小表示范围（非规格化），返回 0。
-否则，阶码 exp = x + 127，直接放在第 23 位到第 30 位之间。
+\textbf{题目要求：}计算 2.0 的 x 次方。\\
+\textbf{推导过程：}2.0\textasciicircum{}x 只有阶码改变。x+127 为阶码。越界返回特定值，否则阶码左移 23 位。
 \end{mybluebox}
 
 ```c
@@ -306,40 +236,31 @@ unsigned floatPower2(int x) {
 
 # 三、 实验中遇到的问题与解决过程
 
-在本地运行 `./btest` 时逻辑完全正确，但在使用 `./dlc` 语法检查器时遇到了多次报错，这也是实验过程中排查问题耗时最长的部分。
+在本地运行 `./btest` 时正确，但在使用 `./dlc` 语法检查器时遇到了多次报错。
 
 ## 问题 1：变量声明位置导致编译失败
-
 \begin{mybluebox}
-\textbf{现象：}出现大量 parse error 和 undeclared variable 报错。
-
-\textbf{原因：} dlc 按照 C89 标准检查，要求所有的局部变量声明必须位于函数体的最前端。在编写 howManyBits 和浮点数函数时，我将变量声明与赋值语句混排了。
-
-\textbf{解决：}将函数内用到的所有 int 变量统一提取到函数第一行声明，随后再进行赋值和运算。
+\textbf{现象：}出现大量 parse error 和 undeclared variable。\\
+\textbf{原因：} dlc 要求变量声明必须在函数最前端。\\
+\textbf{解决：}将所有的 int 变量提取到第一行声明，再进行赋值。
 \end{mybluebox}
 
 ![变量声明报错](2_dlc_19errors.png)
 
 ## 问题 2：使用了非法操作符
-
 \begin{mybluebox}
-\textbf{现象：} bits.c:165:isTmax: Illegal operator (\textgreater{}\textgreater{})
-
-\textbf{原因：} isTmax 中为了判断符号位，使用了右移操作 \textgreater{}\textgreater{}，但仔细阅读题目上方的 Legal ops，发现该题限制了不能使用位移。
-
-\textbf{解决：}利用 \textasciitilde{}x == x+1 特性及 !!\textasciitilde{}x 重写了判断逻辑，成功规避了位移操作。
+\textbf{现象：} bits.c:165:isTmax: Illegal operator (>>)\\
+\textbf{原因：} isTmax 中使用了右移操作 >>，但题目不允许。\\
+\textbf{解决：}利用 \textasciitilde{}x == x+1 特性及 !!\textasciitilde{}x 重写判断逻辑。
 \end{mybluebox}
 
 ![非法操作符报错](3_illegal_op.png)
 
 ## 问题 3：边界值测试与大常量解析
-
 \begin{mybluebox}
-\textbf{现象：}得分 32/36，且出现 bits.c:283: parse error。
-
-\textbf{原因：} howManyBits 处理负数移位出错；floatPower2 的超大常量 0x7F800000 导致老旧解析器崩溃。
-
-\textbf{解决：}修正负数逻辑；将超大常量替换为 (0xFF \textless{}\textless{} 23)。
+\textbf{现象：}得分 32/36，且出现 bits.c:283: parse error。\\
+\textbf{原因：} howManyBits 处理负数移位出错；floatPower2 的超大常量 0x7F800000 导致解析器出错。\\
+\textbf{解决：}修正负数逻辑；将超大常量替换为 (0xFF << 23)。
 \end{mybluebox}
 
 ![部分测试失败](4_32_36.png)
@@ -350,10 +271,10 @@ unsigned floatPower2(int x) {
 
 经过逐步排查与修复，最终代码通过了所有限制检查，并在本地测试中拿到了满分。
 
-![btest测试满分](5_btest_36.png)
+![btest测试](5_btest_36.png)
 
 ![dlc无报错](6_dlc_success.png)
 
 \begin{mybluebox}
-\textbf{总结：}通过本次实验，我对计算机底层的位运算、补码及 IEEE 754 浮点数格式有了更直观的理解。实验中多次遇到的 dlc 报错，让我了解了 C89 标准规范及老旧编译器的限制，并提升了通过阅读日志解决环境问题的能力。
+\textbf{总结：}通过本次实验，我对计算机底层的位运算、补码及 IEEE 754 浮点数格式有了更直观的理解。实验中多次遇到的 dlc 报错，提升了通过阅读日志解决环境问题的能力。
 \end{mybluebox}
